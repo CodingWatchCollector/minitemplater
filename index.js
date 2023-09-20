@@ -2,39 +2,39 @@ const fs = require("fs");
 const file = process.argv[2];
 const text = fs.readFileSync(file).toString();
 
-function render(text, data) {
-  let isTemplate = false;
+const render = (text, data) => {
+  const stateMachine = {
+    "{": {
+      isTemplate: true,
+      "}": {
+        isTemplate: false,
+      },
+    },
+  };
+
+  let result = "";
   let innerTag = "";
-  let output = "";
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-
-    if (char === "{") {
-      isTemplate = true;
-      continue;
+  [...text].reduce((state, char) => {
+    const subState = state[char];
+    if (subState) {
+      if (subState.isTemplate === false) {
+        result += data[innerTag];
+        innerTag = "";
+      }
+      return subState;
     }
 
-    if (char === "}") {
-      isTemplate = false;
-      const value = data[innerTag];
-      output += value;
-      innerTag = "";
-      continue;
-    }
-
-    if (isTemplate) {
+    if (state.isTemplate) {
       innerTag += char;
-      continue;
+      return state;
     }
 
-    if (!isTemplate) {
-      output += char;
-    }
-  }
+    result += char;
+    return stateMachine;
+  }, stateMachine);
 
-  return output;
-}
+  return result;
+};
 
 const data = {
   name: "John",
