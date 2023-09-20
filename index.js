@@ -2,8 +2,8 @@ const fs = require("fs");
 const file = process.argv[2];
 const text = fs.readFileSync(file).toString();
 
-const render = (text, data) => {
-  const stateMachine = {
+const render = (text, data, useDoubleBrackets = false) => {
+  let stateMachine = {
     "{": {
       isTemplate: true,
       "}": {
@@ -11,6 +11,23 @@ const render = (text, data) => {
       },
     },
   };
+
+  if (useDoubleBrackets) {
+    const doubleBrackets = {
+      "[": {
+        "[": {
+          isTemplate: true,
+          "]": {
+            "]": {
+              isTemplate: false,
+            },
+          },
+        },
+      },
+    };
+
+    stateMachine = { ...stateMachine, ...doubleBrackets };
+  }
 
   let result = "";
   let innerTag = "";
@@ -40,7 +57,7 @@ const data = {
   name: "John",
 };
 
-const output = render(text, data);
+const output = render(text, data, true);
 console.log("Output is : ");
 console.log(output);
 fs.writeFileSync("output.txt", output);
