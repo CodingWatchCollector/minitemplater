@@ -2,7 +2,13 @@ const fs = require("fs");
 const file = process.argv[2];
 const text = fs.readFileSync(file).toString();
 
-const render = (text, data, useDoubleBrackets = false) => {
+/**
+ @param {string} text - text to transform
+ @param {Object.<string, any>} data - tag - value pairs
+ @param {Object} [options] - additional options
+ @param {boolean} [options.useDoubleBrackets] - add double brackets as a tag delimiter. 
+*/
+const render = (text, data, options = {}) => {
   let stateMachine = {
     "{": {
       isTemplate: true,
@@ -12,7 +18,7 @@ const render = (text, data, useDoubleBrackets = false) => {
     },
   };
 
-  if (useDoubleBrackets) {
+  if (options.useDoubleBrackets) {
     const doubleBrackets = {
       "[": {
         "[": {
@@ -58,7 +64,7 @@ const data = {
   name: "John",
 };
 
-const output = render(text, data, true);
+const output = render(text, data, { useDoubleBrackets: true });
 console.log("Output is : ");
 console.log(output);
 fs.writeFileSync("output.txt", output);
