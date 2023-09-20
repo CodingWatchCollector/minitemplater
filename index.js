@@ -15,6 +15,15 @@ const render = (text, data, options = {}) => {
       "}": {
         isTemplate: false,
       },
+      "{": {
+        isTemplate: false,
+      },
+    },
+    "%": {
+      isTemplate: true,
+      "%": {
+        isTemplate: false,
+      },
     },
   };
 
