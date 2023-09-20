@@ -35,7 +35,8 @@ const render = (text, data, useDoubleBrackets = false) => {
     const subState = state[char];
     if (subState) {
       if (subState.isTemplate === false) {
-        result += data[innerTag];
+        const value = data[innerTag] ?? "";
+        result += value;
         innerTag = "";
       }
       return subState;
