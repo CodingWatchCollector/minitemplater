@@ -44,15 +44,16 @@ const render = (text, data, options = {}) => {
     stateMachine = { ...stateMachine, ...doubleBrackets };
   }
 
-  let result = "";
-  let innerTag = "";
+  const addValueFromTag = () => {
+    const value = data[innerTag] ?? "";
+    result += value;
+    innerTag = "";
+  };
   [...text].reduce((state, char) => {
     const subState = state[char];
     if (subState) {
       if (subState.isTemplate === false) {
-        const value = data[innerTag] ?? "";
-        result += value;
-        innerTag = "";
+        addValueFromTag();
       }
       return subState;
     }
