@@ -1,1 +1,4 @@
-Hello [[name]]
+Hello {name}.
+{#list}
+  - {name}
+{/}

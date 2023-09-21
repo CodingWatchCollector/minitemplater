@@ -9,6 +9,11 @@ const text = fs.readFileSync(file).toString();
  @param {boolean} [options.useDoubleBrackets] - add double brackets as a tag delimiter. 
 */
 const render = (text, data, options = {}) => {
+  let result = "";
+  let innerTag = "";
+  let isLoop = false;
+  let loopBody = "";
+
   let stateMachine = {
     "{": {
       isTemplate: true,
@@ -17,6 +22,24 @@ const render = (text, data, options = {}) => {
       },
       "{": {
         isTemplate: false,
+      },
+      "#": {
+        isTemplate: true,
+        get "}"() {
+          isLoop = true;
+          return {
+            isTemplate: false,
+          };
+        },
+      },
+      "/": {
+        get "}"() {
+          isLoop = false;
+          return {
+            isTemplate: false,
+            isLoopEnd: true,
+          };
+        },
       },
     },
     "%": {
@@ -49,9 +72,29 @@ const render = (text, data, options = {}) => {
     result += value;
     innerTag = "";
   };
+
   [...text].reduce((state, char) => {
     const subState = state[char];
+    if (isLoop) {
+      loopBody += char;
+      return subState && subState.constructor === Object
+        ? subState
+        : stateMachine;
+    }
     if (subState) {
+      if (subState.isLoopEnd) {
+        const loopData = data[innerTag];
+        if (Array.isArray(loopData)) {
+          const loopTextTrimmed = loopBody.replace(
+            /(^}(?:\n|\r\n))|({\/$)/g,
+            ""
+          );
+          loopData.forEach((item) => {
+            result += render(loopTextTrimmed, item);
+          });
+          innerTag = "";
+        }
+      }
       if (subState.isTemplate === false) {
         addValueFromTag();
       }
@@ -72,6 +115,14 @@ const render = (text, data, options = {}) => {
 
 const data = {
   name: "John",
+  list: [
+    {
+      name: "Marie",
+    },
+    {
+      name: "Paul",
+    },
+  ],
 };
 
 const output = render(text, data, { useDoubleBrackets: true });
